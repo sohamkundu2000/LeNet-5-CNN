@@ -1,0 +1,59 @@
+import tensorflow as tf           #import necessary librarys
+import matplotlib.pyplot as plt
+import numpy as np
+
+mnist=tf.keras.datasets.mnist                         #load the data
+(x_train,y_train),(x_test,y_test)=mnist.load_data()
+
+rows,cols=28,28
+#print(tf.shape(x_train).numpy())
+x_train=x_train.reshape(60000,rows,cols,1)
+x_test=x_test.reshape(x_test.shape[0],rows,cols,1)
+#print(tf.shape(x_train))
+input_shape=(rows,cols,1)
+
+x_train=tf.keras.utils.normalize(x_train)            #normalize the data
+x_test=tf.keras.utils.normalize(x_test)
+
+x_train=x_train.astype('float32')
+x_test=x_test.astype('float32')
+
+y_train=tf.keras.utils.to_categorical(y_train,10)      # one hot representation of the true output
+y_test=tf.keras.utils.to_categorical(y_test,10)
+print(y_test[0])
+
+def built_lenet(input_shape):     #build the model
+
+  model=tf.keras.Sequential()
+  model.add(tf.keras.layers.Conv2D(filters=6,kernel_size=(5,5),strides=(1,1),activation='tanh',input_shape=input_shape))
+  model.add(tf.keras.layers.AveragePooling2D(pool_size=(2,2),strides=(2,2)))
+  model.add(tf.keras.layers.Conv2D(filters=16,kernel_size=(5,5),strides=(1,1),activation='tanh'))
+  model.add(tf.keras.layers.AveragePooling2D(pool_size=(2,2),strides=(2,2)))
+
+  model.add(tf.keras.layers.Flatten())
+  model.add(tf.keras.layers.Dense(units=120,activation='tanh'))
+  model.add(tf.keras.layers.Dense(units=84,activation='tanh'))
+  model.add(tf.keras.layers.Dense(units=10,activation='softmax'))
+  model.compile(loss='categorical_crossentropy',optimizer=tf.keras.optimizers.SGD(lr=0.1,momentum=0.0,decay=0.0),metrics=['accuracy'])
+  return model
+  
+  
+lanet=built_lenet(input_shape)              #fit and evaluate the model
+epochs=4
+history=lanet.fit(x_train,y_train,epochs=epochs,batch_size=128)
+loss,acc=lanet.evaluate(x_test,y_test)
+print('ACCURACY:',acc)
+
+index=3                                        # test the model
+prediction=lanet.predict(x_test)
+print("predicted output is-")
+print(prediction[index].argmax())
+plt.imshow(x_test[index].reshape(28,28),cmap='Greys')
+
+print("astual output is-")
+print(y_test[index].argmax())
+
+
+
+
+
